@@ -3,6 +3,14 @@ import * as L from 'leaflet';
 import { FestivalService } from '../../core/services/festival.service';
 import { Festival } from '../../core/models/festival.model';
 
+// Correction du chemin des icônes par défaut, cassé par le build Angular
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: '/leaflet/marker-icon-2x.png',
+  iconUrl: '/leaflet/marker-icon.png',
+  shadowUrl: '/leaflet/marker-shadow.png',
+});
+
 @Component({
   imports: [],
   selector: 'app-carte',
