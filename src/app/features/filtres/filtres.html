@@ -1,0 +1,6 @@
+<select (change)="onDepartementChange($event)">
+    <option value="">Tous les départements</option>
+    @for (departement of departements; track departement) {
+        <option [value]="departement">{{ departement }}</option>
+    }
+</select>

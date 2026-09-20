@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject } from '@angular/core';
+import { AfterViewInit, Component, effect, inject } from '@angular/core';
 import * as L from 'leaflet';
 import { FestivalService } from '../../core/services/festival.service';
 import { Festival } from '../../core/models/festival.model';
@@ -20,6 +20,14 @@ L.Icon.Default.mergeOptions({
 export class Carte implements AfterViewInit {
   private map!: L.Map;
   private festivalService = inject(FestivalService);
+  private marqueursLayer = L.layerGroup();
+
+  constructor() {
+    effect(() => {
+      const departement: string | null = this.festivalService.departementSelectionne();
+      this.chargerFestivals(departement);
+    });
+  }
 
   ngAfterViewInit(): void {
     this.initialiserCarte();
@@ -32,10 +40,13 @@ export class Carte implements AfterViewInit {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.map);
+
+    this.marqueursLayer.addTo(this.map);
   }
 
-  private chargerFestivals(): void {
-    this.festivalService.getAllFestivals().subscribe((festivals: Festival[]) => {
+  private chargerFestivals(departement?: string | null): void {
+    this.marqueursLayer.clearLayers();
+    this.festivalService.getAllFestivals(departement).subscribe((festivals: Festival[]) => {
       festivals.forEach((festival: Festival) => {
         this.ajouterMarqueur(festival);
       });
@@ -45,7 +56,7 @@ export class Carte implements AfterViewInit {
   private ajouterMarqueur(festival: Festival): void {
     L.marker([festival.lieu.latitude, festival.lieu.longitude])
       .bindPopup(this.creerContenuPopup(festival))
-      .addTo(this.map);
+      .addTo(this.marqueursLayer);
   }
 
   private creerContenuPopup(festival: Festival): string {
