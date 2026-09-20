@@ -22,16 +22,47 @@ export class Carte implements AfterViewInit {
   private festivalService = inject(FestivalService);
 
   ngAfterViewInit(): void {
+    this.initialiserCarte();
+    this.chargerFestivals();
+  }
+
+  private initialiserCarte(): void {
     this.map = L.map('carte').setView([46.6, 2.5], 6);
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(this.map);
+  }
 
+  private chargerFestivals(): void {
     this.festivalService.getAllFestivals().subscribe((festivals: Festival[]) => {
       festivals.forEach((festival: Festival) => {
-        L.marker([festival.lieu.latitude, festival.lieu.longitude]).addTo(this.map);
+        this.ajouterMarqueur(festival);
       });
+    });
+  }
+
+  private ajouterMarqueur(festival: Festival): void {
+    L.marker([festival.lieu.latitude, festival.lieu.longitude])
+      .bindPopup(this.creerContenuPopup(festival))
+      .addTo(this.map);
+  }
+
+  private creerContenuPopup(festival: Festival): string {
+    return `
+      <strong>${festival.nom}</strong><br>
+      Du ${this.formaterDate(festival.dateDebut)} au ${this.formaterDate(festival.dateFin)}<br>
+      ${festival.lieu.ville}<br>
+      <a href="${festival.siteWeb}" target="_blank" rel="noopener noreferrer">${festival.siteWeb}</a>
+    `;
+  }
+
+  private formaterDate(dateIso: string): string {
+    const date = new Date(dateIso);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     });
   }
 }
